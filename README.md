@@ -1,10 +1,3 @@
-Entendi. Você quer **um único bloco Markdown que seja fechado somente no final**, sem eu colocar ` ``` ` no meio do README.
-
-O problema da imagem aconteceu porque eu coloquei blocos de código internos (` ```text `) dentro do bloco principal (` ```markdown `). Isso quebra a visualização do conteúdo quando você copia.
-
-Daqui para frente, vou usar **apenas um bloco externo ` ```markdown `** e, dentro dele, para diagramas, vou usar indentação de 4 espaços em vez de cercas de código.
-
-```markdown
 # 🧾 Notas Fiscais
 
 > Automação desenvolvida inteiramente em Java para processamento e integração de notas fiscais entre FTP, Google e Sankhya.
@@ -306,4 +299,3 @@ Desenvolvedor interessado em **Java, backend, automação e integração de sist
 <p align="center">
   Desenvolvido com ☕ Java
 </p>
-```
