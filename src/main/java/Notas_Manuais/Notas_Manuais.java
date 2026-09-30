@@ -23,7 +23,7 @@ public class Notas_Manuais {
 	public static void NManuais() throws SocketException, IOException, UnirestException {
 
 		try {
-			Ftp ftp = new Ftp("topmix.com.br", "u622477631", "Mbk35WbfJTuz");
+			Ftp ftp = new Ftp("", "", "");
 			System.out.println("Conectado: " + ftp.isConnected());
 			System.out.println(ftp.joinDirectory("Scanner/Notas_Manuais"));
 
