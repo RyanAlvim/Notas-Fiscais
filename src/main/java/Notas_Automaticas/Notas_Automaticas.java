@@ -24,7 +24,7 @@ public class Notas_Automaticas {
 
 	
 	public static void NAutomaticas() throws SocketException, IOException, UnirestException {
-		Ftp ftp = new Ftp("topmix.com.br", "u622477631", "Mbk35WbfJTuz");
+		Ftp ftp = new Ftp("", "", "");
 		ftp.joinDirectory("Scanner/Notas_Automaticas");
 		for(FTPFile arquivo : ftp.listFiles()) {
 			if(arquivo.getName().contains(".jpg")) {
