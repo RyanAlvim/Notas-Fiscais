@@ -1,295 +1,885 @@
-# 🧾 Notas Fiscais
+# 📄 Notas Fiscais
 
-> Automação desenvolvida inteiramente em Java para processamento e integração de notas fiscais entre FTP, Google e Sankhya.
+> Automação desenvolvida em Java para processamento de documentos digitalizados, reconhecimento de texto, integração com FTP e registro automático de informações no ERP Sankhya.
 
 ---
 
 ## 📌 Sobre o Projeto
 
-O **Notas Fiscais** é uma aplicação desenvolvida **100% em Java** para automatizar o processo de recebimento, processamento e integração de notas fiscais.
+O **Notas Fiscais** é uma aplicação desenvolvida inteiramente em **Java** para automatizar o processamento de documentos digitalizados utilizados em diferentes processos internos.
 
-A aplicação realizava a conexão com um servidor **FTP**, identificava e baixava automaticamente as notas fiscais disponíveis, enviava os documentos para o ambiente do **Google**, extraía o **número do pedido** e utilizava essa informação para realizar o processamento necessário no **Sankhya**.
+O sistema funciona como uma camada de integração entre diferentes serviços:
 
-Após a conclusão do processamento, a nota fiscal utilizada era automaticamente excluída do FTP, evitando que o mesmo documento fosse processado novamente.
+- 📡 Servidor FTP
+- 🖼️ Imagens digitalizadas
+- ☁️ Google Cloud Vision
+- 🔎 OCR e extração de informações
+- 🏢 ERP Sankhya
+- 🌐 Serviços HTTP
 
-O projeto foi desenvolvido com foco em **automação de processos empresariais e integração entre sistemas**.
+A aplicação monitora diferentes diretórios no FTP e executa fluxos específicos de acordo com o tipo de documento recebido.
+
+Entre os processos automatizados estão:
+
+- 🧾 Notas fiscais automáticas
+- 📝 Notas fiscais manuais
+- 🔧 Documentos relacionados a bombas
+- 🔍 Documentos de vistorias
 
 ---
 
 ## 🎯 Objetivo
 
-O principal objetivo do projeto era reduzir a quantidade de tarefas manuais envolvidas no processamento de notas fiscais.
+O objetivo principal do projeto é automatizar o processamento de documentos digitalizados que anteriormente dependeriam de diversas operações manuais.
 
-A aplicação automatizava todo o fluxo:
+O sistema realiza automaticamente etapas como:
 
-- 📡 Conexão com o FTP
-- 📥 Busca e download das notas fiscais
-- ☁️ Envio dos documentos para o Google
-- 🔎 Extração de informações da nota
-- 🔢 Identificação do número do pedido
-- 🏢 Processamento no Sankhya
-- 🗑️ Exclusão da nota já processada do FTP
-
----
-
-## 🔄 Fluxo da Automação
-
-    ┌─────────────────┐
-    │       FTP       │
-    │                 │
-    │ Notas Fiscais   │
-    └────────┬────────┘
-             │
-             │ Buscar e baixar
-             ▼
-    ┌─────────────────┐
-    │    Download     │
-    │                 │
-    │ Nota Fiscal     │
-    └────────┬────────┘
-             │
-             │ Enviar
-             ▼
-    ┌─────────────────┐
-    │     Google      │
-    │                 │
-    │ Processamento   │
-    └────────┬────────┘
-             │
-             │ Extrair informações
-             ▼
-    ┌─────────────────┐
-    │     Extração    │
-    │                 │
-    │ Nº do Pedido    │
-    └────────┬────────┘
-             │
-             │ Integrar
-             ▼
-    ┌─────────────────┐
-    │     Sankhya     │
-    │                 │
-    │ Processamento   │
-    └────────┬────────┘
-             │
-             │ Processamento concluído
-             ▼
-    ┌─────────────────┐
-    │  Exclusão FTP   │
-    │                 │
-    │ Nota processada │
-    └─────────────────┘
+- Busca de documentos no FTP
+- Download das imagens
+- Conversão das imagens para Base64
+- Envio para OCR
+- Extração de informações do documento
+- Identificação de números e chaves
+- Consulta ao Sankhya
+- Registro das informações processadas
+- Organização dos documentos processados
+- Separação de documentos com problemas
 
 ---
 
-## ⚙️ Funcionamento
+## 🏗️ Arquitetura
 
-### 1. 📡 Conexão com o FTP
+O fluxo geral da aplicação pode ser representado da seguinte forma:
 
-A aplicação estabelecia uma conexão com o servidor FTP responsável por disponibilizar as notas fiscais.
-
-O sistema verificava os arquivos disponíveis e identificava as notas que deveriam ser processadas.
-
-### 2. 📥 Download das Notas
-
-As notas fiscais encontradas no FTP eram baixadas automaticamente pela aplicação Java.
-
-### 3. ☁️ Envio para o Google
-
-Após o download, os documentos eram enviados para o ambiente do **Google** utilizado pelo processo.
-
-### 4. 🔎 Extração das Informações
-
-A aplicação processava a nota fiscal e extraía as informações necessárias para continuar o fluxo.
-
-Entre essas informações estava o **número do pedido**, utilizado posteriormente no Sankhya.
-
-### 5. 🏢 Processamento no Sankhya
-
-Com o número do pedido identificado, a aplicação realizava o processamento necessário no **Sankhya**, integrando as informações da nota ao sistema utilizado pela empresa.
-
-### 6. 🗑️ Exclusão da Nota no FTP
-
-Após o processamento ser concluído, a nota fiscal utilizada era excluída do FTP.
-
-Isso evitava que a mesma nota fosse processada novamente em uma execução futura.
+    ┌──────────────────────┐
+    │         FTP          │
+    │                      │
+    │  Documentos / JPGs   │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │      Aplicação       │
+    │         Java         │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │      Download        │
+    │      da imagem       │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │       Base64         │
+    │                      │
+    │ Conversão da imagem  │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │   Google Vision API  │
+    │                      │
+    │   TEXT_DETECTION     │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │  Extração de texto   │
+    │      / JSON          │
+    └──────────┬───────────┘
+               │
+               ▼
+    ┌──────────────────────┐
+    │       Sankhya        │
+    │                      │
+    │ Consulta / Registro  │
+    └──────────┬───────────┘
+               │
+          ┌────┴─────┐
+          ▼          ▼
+    ┌───────────┐ ┌───────────┐
+    │Processadas│ │  Lixeira  │
+    └───────────┘ └───────────┘
 
 ---
 
-## ☕ Tecnologia
+# 🔄 Fluxo Principal
+
+A aplicação possui um ponto de entrada centralizado na classe:
+
+    Main.Main
+
+O programa executa continuamente os módulos de processamento:
+
+    Main
+     │
+     ├── Notas Manuais
+     │
+     ├── Notas Automáticas
+     │
+     ├── Bombas
+     │
+     └── Vistorias
+
+Cada módulo acessa seu respectivo diretório no FTP e executa o fluxo de processamento correspondente.
+
+---
+
+# 🧾 Notas Automáticas
+
+O módulo:
+
+    Notas_Automaticas.Notas_Automaticas
+
+é responsável pelo processamento automatizado de notas fiscais digitalizadas.
+
+O diretório utilizado é:
+
+    Scanner/Notas_Automaticas
+
+---
+
+## 🔄 Fluxo das Notas Automáticas
+
+    FTP
+     │
+     │ Scanner/Notas_Automaticas
+     ▼
+    Imagem JPG
+     │
+     ▼
+    Download
+     │
+     ▼
+    Conversão para Base64
+     │
+     ▼
+    Google Vision
+     │
+     ▼
+    OCR
+     │
+     ▼
+    Extração da chave de acesso
+    e número de entrega
+     │
+     ▼
+    Consulta no Sankhya
+     │
+     ▼
+    Identificação da nota
+     │
+     ▼
+    Registro no Sankhya
+     │
+     ▼
+    Arquivo processado
+
+---
+
+## 🔎 Extração das Informações
+
+A classe:
+
+    Json.BuscarStr
+
+é responsável por interpretar o texto retornado pelo OCR.
+
+O processamento procura informações relacionadas a:
+
+- CHAVE DE ACESSO
+- N. ENTREGA
+
+A aplicação combina essas informações para localizar o documento correspondente no Sankhya.
+
+---
+
+## 🏢 Consulta no Sankhya
+
+Depois da extração das informações, o projeto executa uma consulta através do serviço:
+
+    DbExplorerSP.executeQuery
+
+A consulta procura correspondências relacionadas à chave da NF-e ou ao número de entrega.
+
+O resultado determina como o documento será processado.
+
+---
+
+## 📂 Resultado do Processamento
+
+Quando o documento é processado corretamente, a imagem é movida para:
+
+    Processadas/
+
+Quando ocorre uma inconsistência ou falha no processamento, o arquivo pode ser direcionado para:
+
+    Lixeira/
+
+---
+
+# 📝 Notas Manuais
+
+O módulo:
+
+    Notas_Manuais.Notas_Manuais
+
+é responsável pelo processamento de documentos inseridos manualmente.
+
+O diretório utilizado é:
+
+    Scanner/Notas_Manuais
+
+---
+
+## 🔄 Fluxo
+
+    FTP
+     │
+     ▼
+    Scanner/Notas_Manuais
+     │
+     ▼
+    Imagem JPG
+     │
+     ▼
+    Identificação pelo nome do arquivo
+     │
+     ▼
+    Registro no Sankhya
+     │
+     ├───────────────┐
+     ▼               ▼
+    Processadas    Lixeira
+
+---
+
+## 📌 Identificação
+
+Nesse fluxo, o nome do arquivo é utilizado como identificador do documento.
+
+O sistema utiliza essa informação para realizar o registro através da integração com o Sankhya.
+
+---
+
+# 🔧 Bombas
+
+O módulo:
+
+    Bombas.Bombas
+
+é responsável pelo processamento de documentos relacionados às bombas.
+
+O diretório utilizado é:
+
+    Scanner/Bombas
+
+---
+
+## 🔄 Fluxo das Bombas
+
+    FTP
+     │
+     ▼
+    Imagem JPG
+     │
+     ▼
+    Download
+     │
+     ▼
+    Base64
+     │
+     ▼
+    Google Vision
+     │
+     ▼
+    OCR
+     │
+     ▼
+    Procura por "Pedido:"
+     │
+     ▼
+    Número do pedido
+     │
+     ▼
+    Registro no Sankhya
+     │
+     ├───────────────┐
+     ▼               ▼
+    Processadas    Lixeira
+
+---
+
+## 🔎 Extração do Pedido
+
+A classe:
+
+    Bombas.BuscaPedido
+
+é utilizada para localizar o número do pedido dentro do texto reconhecido.
+
+O processamento procura a expressão:
+
+    Pedido:
+
+O valor encontrado é utilizado como identificador do documento.
+
+---
+
+# 🔍 Vistorias
+
+O módulo:
+
+    Vistorias.Vistorias
+
+processa documentos relacionados às vistorias.
+
+O diretório utilizado é:
+
+    Scanner/Vistorias
+
+---
+
+## 🔄 Fluxo
+
+    FTP
+     │
+     ▼
+    Imagem JPG
+     │
+     ▼
+    Download
+     │
+     ▼
+    Base64
+     │
+     ▼
+    Google Vision
+     │
+     ▼
+    OCR
+     │
+     ▼
+    Extração do pedido
+     │
+     ▼
+    Consulta / registro no Sankhya
+     │
+     ├───────────────┐
+     ▼               ▼
+    Processadas    Lixeira
+
+---
+
+# ☁️ Google Cloud Vision
+
+O projeto utiliza a API do **Google Cloud Vision** para reconhecimento de texto em imagens.
+
+A classe responsável pela integração é:
+
+    Google.Google
+
+A aplicação utiliza a funcionalidade:
+
+    TEXT_DETECTION
+
+---
+
+## 🖼️ Processo de OCR
+
+Antes do envio para o Google Vision, a imagem é convertida para Base64.
+
+O fluxo é:
+
+    Arquivo JPG
+        │
+        ▼
+    Files.readAllBytes()
+        │
+        ▼
+    Base64 Encoder
+        │
+        ▼
+    String Base64
+        │
+        ▼
+    Google Vision API
+        │
+        ▼
+    JSON
+        │
+        ▼
+    Texto reconhecido
+
+---
+
+# 🔤 Conversão para Base64
+
+A classe:
+
+    Google.FileBase64
+
+é responsável pela conversão das imagens para Base64.
+
+O processo utiliza:
+
+    java.util.Base64
+
+e:
+
+    java.nio.file.Files
+
+O arquivo é lido como bytes e posteriormente convertido para uma representação Base64.
+
+---
+
+# 🧩 Processamento de JSON
+
+A classe:
+
+    Json.Json
+
+interpreta a resposta JSON enviada pelo Google Vision.
+
+O processamento acessa:
+
+    responses
+
+e:
+
+    textAnnotations
+
+A primeira anotação de texto é utilizada para obter a descrição textual reconhecida na imagem.
+
+---
+
+# 🏢 Integração com Sankhya
+
+A integração com o ERP Sankhya é realizada através de requisições HTTP.
+
+O projeto possui diferentes classes responsáveis por essa comunicação:
+
+    Sankhya.Sankhya
+    Sankhya.QueryCount
+    Sankhya.Insert
+
+---
+
+## 🔐 Autenticação
+
+A classe:
+
+    Sankhya.Sankhya
+
+realiza a autenticação no serviço do Sankhya através do serviço:
+
+    MobileLoginSP.login
+
+Após a autenticação, a aplicação obtém um:
+
+    JSESSIONID
+
+Esse identificador é utilizado nas requisições seguintes.
+
+---
+
+## 🔎 Consultas
+
+A classe:
+
+    Sankhya.QueryCount
+
+executa consultas utilizando:
+
+    DbExplorerSP.executeQuery
+
+As consultas são enviadas através de requisições HTTP e os resultados são interpretados como JSON.
+
+---
+
+## 💾 Inserção de Registros
+
+A classe:
+
+    Sankhya.Insert
+
+é responsável pelo registro dos documentos processados.
+
+A aplicação utiliza o serviço:
+
+    DatasetSP.save
+
+e grava informações na entidade:
+
+    AD_SCANNERS
+
+Entre os dados utilizados estão:
+
+- Número do scanner
+- Chaves relacionadas ao documento
+- Caminho do arquivo
+- Evento
+- Tabela relacionada
+
+---
+
+# 📡 FTP
+
+A classe:
+
+    Ftp.Ftp
+
+encapsula a comunicação com o servidor FTP.
+
+A implementação utiliza:
+
+    Apache Commons Net
+
+e:
+
+    FTPClient
+
+---
+
+## ⚙️ Operações FTP
+
+A classe possui funcionalidades para:
+
+- Conectar ao servidor
+- Autenticar
+- Alterar diretórios
+- Listar arquivos
+- Baixar arquivos
+- Mover arquivos
+- Desconectar
+
+---
+
+## 📂 Organização dos Arquivos
+
+Os módulos utilizam diretórios separados para cada tipo de documento.
+
+    Scanner/
+    │
+    ├── Notas_Automaticas/
+    │   ├── Processadas/
+    │   └── Lixeira/
+    │
+    ├── Notas_Manuais/
+    │   ├── Processadas/
+    │   └── Lixeira/
+    │
+    ├── Bombas/
+    │   ├── Processadas/
+    │   └── Lixeira/
+    │
+    └── Vistorias/
+        ├── Processadas/
+        └── Lixeira/
+
+Essa organização permite separar documentos ainda não processados dos documentos já tratados.
+
+---
+
+# 🧠 Arquitetura dos Módulos
+
+A aplicação foi dividida em pacotes de acordo com a responsabilidade de cada componente.
+
+    src/main/java/
+    │
+    ├── Bombas/
+    │   ├── Bombas.java
+    │   └── BuscaPedido.java
+    │
+    ├── Ftp/
+    │   └── Ftp.java
+    │
+    ├── Google/
+    │   ├── FileBase64.java
+    │   └── Google.java
+    │
+    ├── Json/
+    │   ├── Json.java
+    │   └── BuscarStr.java
+    │
+    ├── Main/
+    │   └── Main.java
+    │
+    ├── Notas_Automaticas/
+    │   ├── Notas_Automaticas.java
+    │   └── Select.java
+    │
+    ├── Notas_Manuais/
+    │   └── Notas_Manuais.java
+    │
+    ├── Sankhya/
+    │   ├── Insert.java
+    │   ├── QueryCount.java
+    │   └── Sankhya.java
+    │
+    └── Vistorias/
+        └── Vistorias.java
+
+---
+
+# 🛠️ Tecnologias
+
+## Linguagem
+
+- Java 8
+
+## Bibliotecas
+
+- Apache Commons Net
+- Unirest
+- JSON
+
+## Serviços
+
+- Google Cloud Vision API
+- Sankhya
+- FTP
+
+## Build
+
+- Maven
+
+---
+
+# 📦 Dependências
+
+O projeto utiliza Maven para gerenciamento das dependências.
+
+Entre as principais dependências estão:
+
+- `commons-net`
+- `unirest-java`
+- `org.json`
+
+A configuração está disponível no:
+
+    pom.xml
+
+---
+
+# 🔄 Fluxo Completo
+
+De maneira simplificada, a aplicação funciona como uma esteira de processamento:
+
+    Documento digitalizado
+            │
+            ▼
+          FTP
+            │
+            ▼
+      Aplicação Java
+            │
+            ▼
+        Download
+            │
+            ▼
+         Base64
+            │
+            ▼
+     Google Cloud Vision
+            │
+            ▼
+          OCR
+            │
+            ▼
+     Extração de dados
+            │
+            ▼
+         Sankhya
+            │
+            ▼
+    Registro do documento
+            │
+       ┌────┴────┐
+       ▼         ▼
+    Processado  Lixeira
+
+---
+
+# ⚙️ Execução
+
+## Requisitos
+
+Para executar o projeto são necessários, conforme o ambiente utilizado:
+
+- Java 8
+- Maven
+- Acesso ao servidor FTP
+- Acesso à API do Google Cloud Vision
+- Acesso ao Sankhya
+- Credenciais válidas para os serviços utilizados
+
+---
+
+## ▶️ Inicialização
+
+O ponto de entrada da aplicação é:
+
+    Main.Main
+
+A aplicação inicia o processamento e executa continuamente os módulos:
+
+    Notas_Manuais
+    Notas_Automaticas
+    Bombas
+    Vistorias
+
+---
+
+# 🔐 Configuração
+
+As credenciais e informações sensíveis não devem ficar diretamente no código-fonte.
+
+Uma configuração mais segura deve utilizar variáveis de ambiente ou arquivos de configuração externos.
+
+Exemplo conceitual:
+
+    FTP_HOST
+    FTP_USERNAME
+    FTP_PASSWORD
+
+    GOOGLE_API_KEY
+
+    SANKHYA_USERNAME
+    SANKHYA_PASSWORD
+
+Essas informações não devem ser versionadas no Git.
+
+---
+
+# ⚠️ Segurança
+
+> **Importante:** o projeto original contém credenciais e chaves diretamente no código-fonte.
+
+Antes de publicar este projeto em um repositório público:
+
+- Remova credenciais do código.
+- Revogue e gere novamente chaves expostas.
+- Altere senhas que tenham sido utilizadas no projeto.
+- Utilize variáveis de ambiente.
+- Não publique tokens de API.
+- Não publique credenciais de FTP.
+- Não publique credenciais do Sankhya.
+- Revise o histórico do Git caso os segredos já tenham sido commitados.
+
+---
+
+# 🧹 Gerenciamento dos Arquivos
+
+Uma característica importante do projeto é a organização automática dos documentos após o processamento.
+
+O sistema trabalha basicamente com dois destinos:
+
+### Processadas
+
+Documentos que tiveram o processamento concluído.
+
+    Processadas/
+
+### Lixeira
+
+Documentos que apresentaram problemas ou não puderam ser processados corretamente.
+
+    Lixeira/
+
+Isso permite manter o diretório de entrada organizado e separar os documentos de acordo com seu estado.
+
+---
+
+# 📚 Conhecimentos Aplicados
+
+O projeto reúne diversos conceitos de desenvolvimento de software.
 
 ### Java
 
-O projeto foi desenvolvido **inteiramente em Java**.
-
-A linguagem era utilizada para implementar todo o fluxo de automação e integração:
-
-    Java
-     │
-     ├── Conexão com FTP
-     ├── Download de arquivos
-     ├── Manipulação das notas
-     ├── Processamento dos documentos
-     ├── Extração de informações
-     ├── Integração com Google
-     ├── Integração com Sankhya
-     └── Gerenciamento dos arquivos processados
-
----
-
-## 🔗 Integrações
-
-| Sistema | Função |
-|---|---|
-| 📡 **FTP** | Origem e armazenamento das notas fiscais |
-| ☁️ **Google** | Recebimento e processamento dos documentos |
-| 🏢 **Sankhya** | Processamento e integração das informações |
-
----
-
-## 🧩 Principais Funcionalidades
-
-- ✅ Conexão automática com servidor FTP
-- ✅ Busca de notas fiscais disponíveis
-- ✅ Download automático dos documentos
-- ✅ Envio dos arquivos para o Google
-- ✅ Processamento das notas fiscais
-- ✅ Extração do número do pedido
-- ✅ Integração com o Sankhya
-- ✅ Controle do fluxo de processamento
-- ✅ Exclusão das notas já utilizadas
-- ✅ Prevenção de processamento duplicado
-- ✅ Automação de tarefas repetitivas
-
----
-
-## 🧠 Conhecimentos Aplicados
-
-O desenvolvimento do projeto envolveu conhecimentos em:
-
-### Programação
-
-- Java
-- Orientação a Objetos
+- Programação Orientada a Objetos
 - Manipulação de arquivos
-- Processamento de documentos
-- Automação de processos
+- Exceções
+- Streams de dados
+- Datas e horários
+- Base64
+- Comunicação de rede
 
-### Integração de Sistemas
+### Integração
 
-- Comunicação com servidores FTP
-- Integração entre sistemas distintos
-- Transferência de arquivos
-- Processamento de documentos
-- Integração com serviços externos
-- Integração com sistema ERP
+- APIs HTTP
+- JSON
+- FTP
+- Integração com ERP
+- Integração com serviço de OCR
 
 ### Automação
 
-- Execução automática de tarefas
-- Processamento sequencial de documentos
+- Processamento automático de documentos
+- OCR
 - Extração de informações
-- Controle de documentos processados
-- Gerenciamento de arquivos
+- Organização automática de arquivos
+- Processamento contínuo
+
+### Sistemas Empresariais
+
+- Integração com ERP
+- Registro de documentos
+- Controle de processos
+- Identificação de documentos
+- Fluxos de processamento
 
 ---
 
-## 📊 Problema Solucionado
+# 💡 O que este projeto demonstra
 
-O projeto foi criado para automatizar um fluxo que envolvia diferentes sistemas e diversas operações manuais.
+O **Notas Fiscais** demonstra experiência prática na construção de uma aplicação de integração capaz de conectar diferentes tecnologias em um único fluxo.
 
-O processo podia ser representado da seguinte forma:
+O projeto combina:
 
-    Localizar nota
-          ↓
-    Baixar nota
-          ↓
-    Enviar para o Google
-          ↓
-    Processar documento
-          ↓
-    Extrair número do pedido
-          ↓
-    Processar no Sankhya
-          ↓
-    Remover nota utilizada do FTP
+    Java
+      +
+    FTP
+      +
+    Google Vision
+      +
+    OCR
+      +
+    Processamento de JSON
+      +
+    HTTP
+      +
+    Sankhya
+      =
+    Automação de processamento de documentos
 
-A aplicação Java transformava essas etapas em um fluxo automatizado.
-
----
-
-## 🚀 Benefícios da Automação
-
-A automatização do processo proporcionava:
-
-- ⚡ Maior agilidade no processamento das notas
-- 🔄 Redução de tarefas repetitivas
-- 🤖 Menor necessidade de intervenção manual
-- 📂 Organização do fluxo de documentos
-- 🔗 Integração entre diferentes sistemas
-- 🛡️ Redução do risco de processamento duplicado
-- 🧹 Limpeza automática dos documentos já processados
+Além do desenvolvimento em Java, o projeto envolve a criação de fluxos automatizados para reduzir operações manuais e conectar sistemas independentes.
 
 ---
 
-## 🏗️ Arquitetura Conceitual
-
-A aplicação funcionava como uma camada de automação responsável por conectar as diferentes etapas do processo:
-
-    ┌──────────────────────┐
-    │     Aplicação Java   │
-    └──────────┬───────────┘
-               │
-       ┌───────┼────────┐
-       │       │        │
-       ▼       ▼        ▼
-      FTP    Google   Sankhya
-       │       │        │
-       │       │        │
-       ▼       ▼        ▼
-    Entrada  Process.  Integração
-    de notas dos dados do pedido
-       │       │        │
-       └───────┼────────┘
-               │
-               ▼
-        Processo concluído
-
----
-
-## 📚 Objetivo Técnico
-
-Além da automação do processo empresarial, o projeto representou uma aplicação prática de **integração de sistemas utilizando Java**.
-
-O desenvolvimento envolveu a comunicação entre sistemas com responsabilidades diferentes, permitindo que o fluxo de processamento de notas fiscais fosse executado de forma automatizada.
-
-O projeto demonstra conhecimentos em:
-
-- ☕ Java
-- 🔗 Integração de sistemas
-- 📡 FTP
-- 📂 Manipulação de arquivos
-- 📄 Processamento de documentos
-- 🤖 Automação
-- 🏢 Integração com ERP
-
----
-
-## 📌 Status
+# 📌 Status
 
 > 🚧 Projeto desenvolvido anteriormente.
 
-Este repositório representa um projeto de automação empresarial desenvolvido em Java para processamento e integração de notas fiscais.
+O projeto representa uma aplicação de automação e integração desenvolvida para processamento de documentos e comunicação entre serviços externos.
 
 ---
 
-## 👨‍💻 Autor
+# 👨‍💻 Autor
 
 **Ryan Alvim**
 
-Desenvolvedor interessado em **Java, backend, automação e integração de sistemas**.
+Desenvolvedor interessado em:
 
-### 🔗 Contato
+- ☕ Java
+- 🔧 Backend
+- 🤖 Automação
+- 🔗 Integração de sistemas
+- 🗄️ Banco de dados
+- 🌐 Desenvolvimento de software
+
+### Contato
 
 - GitHub: [@RyanAlvim](https://github.com/RyanAlvim)
 - E-mail: [ryanalvim65@gmail.com](mailto:ryanalvim65@gmail.com)
